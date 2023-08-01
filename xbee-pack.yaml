@@ -1,0 +1,47 @@
+schema-version: 1.0
+
+type: builder
+
+description: |
+  The Kmod package contains libraries and utilities for loading kernel modules
+  Installed programs:
+    depmod (link to kmod), insmod (link to kmod), kmod, lsmod (link to kmod), modinfo (link to kmod), modprobe (link to kmod), and rmmod (link to kmod)
+  Installed library:
+    libkmod.so
+  Short Descriptions
+  
+  depmod: Creates a dependency file based on the symbols it finds in the existing set of modules; this dependency file is used by modprobe to automatically load the required modules
+  insmod: Installs a loadable module in the running kernel
+  kmod: Loads and unloads kernel modules
+  lsmod: Lists currently loaded modules
+  modinfo: Examines an object file associated with a kernel module and displays any information that it can glean
+  modprobe: Uses a dependency file, created by depmod, to automatically load relevant modules
+  rmmod: Unloads modules from the running kernel
+  
+  libkmod: This library is used by other programs to load and unload kernel modules
+
+var:
+  version: 30
+
+dependencies:
+  - pkg-config
+  - zstd
+  - xz
+  - zlib
+  - openssl
+
+provision:
+  - url:
+      from: https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-{{ .version }}.tar.xz
+      todir: "{{ .xbee.src }}"
+  - folder: "{{ .xbee.out }}/usr/sbin"
+build:
+  - shell:
+      cmds:
+        - ./configure --prefix=/usr --sysconfdir=/etc --with-openssl --with-xz --with-zstd --with-zlib
+        - make
+        - make install DESTDIR={{ .xbee.out }}
+        - bash {{ .templates }}/postinstall.sh
+      directory: "{{ .xbee.src }}/kmod-{{ .version }}"
+
+
